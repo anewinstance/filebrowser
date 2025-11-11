@@ -22,7 +22,7 @@ build-frontend: ## Build frontend
 
 .PHONY: build-backend
 build-backend: ## Build backend
-	$Q $(go) build -ldflags '$(LDFLAGS)' -o .
+	$Q $(go) build -ldflags '$(LDFLAGS)' -o ./dist
 
 .PHONY: test
 test: | test-frontend test-backend ## Run all tests
