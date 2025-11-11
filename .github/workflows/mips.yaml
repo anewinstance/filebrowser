@@ -1,0 +1,46 @@
+name: Build for AR9344 (Linux MIPS big-endian)
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build-mips:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'   # 可改
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      # 关键：交叉编译 AR9344 二进制
+      - name: Cross compile (AR9344 MIPS big-endian, soft-float)
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: mips
+          GOMIPS: softfloat
+        run: make build   # 你的 Makefile 里把输出写到 dist/ 即可
+
+      - name: Upload AR9344 binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: myapp-ar9344
+          path: dist/*   # 这里会打包所有生成的文件
